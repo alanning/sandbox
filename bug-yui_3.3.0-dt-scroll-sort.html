@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bug: YUI 3.3.0 DataTable + Scroll + Sort causes column mismatch</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="http://yui.yahooapis.com/3.3.0/build/yui/yui-min.js" charset="utf-8"></script>
+    <style>
+        fieldset {
+            float:left;
+            margin:1em;
+        }
+    </style>
+</head>
+<body class="yui3-skin-sam">
+    <h2>Bug: YUI 3.3.0 DataTable + Scroll + Sort causes column mismatch</h2>
+    <fieldset>
+        <legend>Column Headers shorter than Data</legend>
+        <div id="table1"></div>
+    </fieldset>
+    <fieldset>
+        <legend>Column Headers wider than Data</legend>
+        <div id="table2"></div>
+    </fieldset>
+
+    <script type="text/javascript">
+    (function() {
+        YUI({
+            filter: 'debug'
+        }).use("console", "test", "dump", "datatable", "css-reset"
+        , function(Y) {
+
+            var myConsole = new Y.Console().render();
+
+
+            var testBasic = new Y.Test.Case({ 
+                name: "Bug Example",
+                
+                setUp: function() {
+                    
+                    // Creates a Columnset with 3 Columns. "cost" is not rendered.
+                    var cols1 = [
+                        { key: "id", label: "ID", sortable: true },
+                        { key: "name", label: "Name", sortable: true },
+                        { key: "price", label: "Prc", sortable: true }
+                    ];
+                    var cols2 = [
+                        { key: "id", label: "ID______LONG", sortable: true },
+                        { key: "name", label: "Name______LONG", sortable: true },
+                        { key: "price", label: "Price______LONG", sortable: true }
+                    ];
+                    // Columns must match data parameter names
+                    var data = [
+                        {id:"ga-3475", name:"gadget", price:"$6.99", cost:"$5.99"},
+                        {id:"sp-9980", name:"sprocket", price:"$3.75", cost:"$3.25"},
+                        {id:"wi-0650", name:"widget", price:"$4.25", cost:"$3.75"},
+                        {id:"ga-3475", name:"gadget", price:"$6.99", cost:"$5.99"},
+                        {id:"sp-9980", name:"sprocket", price:"$3.75", cost:"$3.25"},
+                        {id:"wi-0650", name:"widget", price:"$4.25", cost:"$3.75"},
+                        {id:"ga-3475", name:"gadget", price:"$6.99", cost:"$5.99"},
+                        {id:"sp-9980", name:"sprocket", price:"$3.75", cost:"$3.25"},
+                        {id:"wi-0650", name:"widget", price:"$4.25", cost:"$3.75"},
+                        {id:"ga-3475", name:"gadget", price:"$6.99", cost:"$5.99"},
+                        {id:"sp-9980", name:"sprocket", price:"$3.75", cost:"$3.25"},
+                        {id:"wi-0650", name:"widget", price:"$4.25", cost:"$3.75"},
+                        {id:"ga-3475", name:"gadget", price:"$6.99", cost:"$5.99"},
+                        {id:"sp-9980", name:"sprocket", price:"$3.75", cost:"$3.25"},
+                        {id:"wi-0650", name:"widget", price:"$4.25", cost:"$3.75"}
+                    ];
+                     
+                    var dtConfig = { 
+                        columnset: cols1,
+                        recordset: data,
+                        plugins : [
+                            { fn: Y.Plugin.DataTableSort }
+                            , { fn: Y.Plugin.DataTableScroll, cfg: { height: '200px' } }
+                        ]
+                    };
+                    
+                    // "DataTable with Sort and Scroll, Headers shorter than data",
+                    this.testDataTable1 = new Y.DataTable.Base(dtConfig);
+
+                    // "DataTable with Sort and Scroll, Headers wider than data",
+                    dtConfig.columnset = cols2;
+                    this.testDataTable2 = new Y.DataTable.Base(dtConfig);
+                }
+                
+                , tearDown: function() {
+                    delete this.testDataTable1;
+                    delete this.testDataTable2;
+                }
+                
+                , "test scroll+sort+datasource causes column mismatch" : function() {
+                    this.testDataTable1.render("#table1");
+                    this.testDataTable2.render("#table2");
+
+                    /*
+                    var dt = this.testDataTable1;
+                    this.testDataTable1.sort.after('lastSortedByChange', function(e) {
+                        dt.scroll._syncWidths();
+                    });
+                    var dt2 = this.testDataTable2;
+                    this.testDataTable2.sort.after('lastSortedByChange', function(e) {
+                        dt2.scroll._syncWidths();
+                    });
+                    */
+                }
+            });
+
+            var suite = new Y.Test.Suite({name:"Bug: YUI 3.3.0 DataTable + Scroll + Sort Test Suite"});
+            suite.add(testBasic);
+
+            Y.Test.Runner.setName("Test Runner");
+            Y.Test.Runner.add(suite);
+            Y.Test.Runner.run();
+        });
+    })();
+    </script>
+</body>
+</html>
+
